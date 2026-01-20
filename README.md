@@ -39,6 +39,8 @@ y = 1 if hy > t else 0
 Simply select your target function and press the optimize button, then transfer the weight values to the potentiometers on your circuit.
 (Note that depending on how you wired your circuit, you may need to invert each of the weight values.)
 
+(Can be used online at [https://nathanmehaffy.github.io/neural-net-lab/])
+
 ### Manual
 
 There is also a fairly simple procedure to find any 2-to-1 binary function on the implemented circuit by hand.
