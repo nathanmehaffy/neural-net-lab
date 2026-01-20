@@ -382,9 +382,9 @@
             const h3 = (a1 + a2) / 2;
             
             if (useStep) {
-                return h3 > p.t ? 1 : 0;
+                return h3 > -p.t ? 1 : 0;
             } else {
-                return sigmoid(h3 - p.t);
+                return sigmoid(h3 + p.t);
             }
         }
 
@@ -418,7 +418,7 @@
             const a1 = softplus(h1);
             const a2 = softplus(h2);
             const h3 = (a1 + a2) / 2;
-            const y_soft = sigmoid(h3 - p.t);
+            const y_soft = sigmoid(h3 + p.t);
 
             // Backward pass (cross-entropy + sigmoid)
             const dL = y_soft - target;
@@ -436,7 +436,7 @@
             grads.w2 = dL_dh1 * x2 / 2;
             grads.w3 = dL_dh2 * x1 / 2;
             grads.w4 = dL_dh2 * x2 / 2;
-            grads.t = -dL;
+            grads.t = dL;
 
             return grads;
         }
