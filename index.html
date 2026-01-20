@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Circuit Optimizer (v5b-A)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f7f7f8;
+            --panel-color: #ffffff;
+            --surface-color: #ececf1;
+            --border-color: #e5e5e5;
+            --text-color: #353740;
+            --text-secondary: #6e6e80;
+            --accent-color: #10a37f;
+            --accent-hover: #1a7f64;
+            --led-on: #10a37f;
+            --led-off: #e5e5e5;
+            --match-color: #10a37f;
+            --mismatch-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Söhne', 'ui-sans-serif', 'system-ui', -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .panel {
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--surface-color);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .pot-value {
+            float: right;
+            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+            color: var(--accent-color);
+            font-size: 0.875rem;
+        }
+
+        select {
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            background-color: var(--panel-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: background-color 0.15s, opacity 0.15s;
+        }
+
+        button#btn-run {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        button#btn-run:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+        }
+
+        button#btn-random {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+        }
+
+        button#btn-random:hover:not(:disabled) {
+            background-color: #dcdce3;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .led {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--led-off);
+            border: 2px solid var(--border-color);
+            display: inline-block;
+            vertical-align: middle;
+            transition: all 0.15s;
+        }
+
+        .led.on {
+            background-color: var(--led-on);
+            border-color: var(--led-on);
+            box-shadow: 0 0 12px var(--led-on);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            margin-top: 12px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--surface-color);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        tr.match {
+            background-color: rgba(16, 163, 127, 0.1);
+        }
+
+        tr.mismatch {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        canvas {
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            height: auto;
+        }
+
+        #progression-chart {
+            height: 250px !important;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .status-msg {
+            font-size: 0.875rem;
+            margin-top: 12px;
+            color: var(--text-secondary);
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Neural Network Circuit Optimizer</h1>
+
+    <div class="container">
+        <!-- Controls Panel -->
+        <div class="panel">
+            <h2>Instrument Controls</h2>
+            <div class="control-group">
+                <label>Target Function
+                    <select id="target-func" style="float:right">
+                        <option value="xor">XOR</option>
+                        <option value="xnor">XNOR</option>
+                        <option value="and">AND</option>
+                        <option value="or">OR</option>
+                        <option value="nand">NAND</option>
+                        <option value="nor">NOR</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>Weight Pot 1 (w1) <span class="pot-value" id="val-w1">0.00</span></label>
+                <input type="range" id="w1" min="-1" max="1" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>Weight Pot 2 (w2) <span class="pot-value" id="val-w2">0.00</span></label>
+                <input type="range" id="w2" min="-1" max="1" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>Weight Pot 3 (w3) <span class="pot-value" id="val-w3">0.00</span></label>
+                <input type="range" id="w3" min="-1" max="1" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>Weight Pot 4 (w4) <span class="pot-value" id="val-w4">0.00</span></label>
+                <input type="range" id="w4" min="-1" max="1" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>Threshold Pot (T) <span class="pot-value" id="val-t">1.0V</span></label>
+                <input type="range" id="t" min="-4.5" max="4.5" step="0.1" value="1.0">
+            </div>
+
+            <div class="button-row">
+                <button id="btn-random">Randomize</button>
+                <button id="btn-run">Run Optimizer</button>
+            </div>
+            <div id="status" class="status-msg">Ready. Adjust pots manually or run optimizer.</div>
+        </div>
+
+        <!-- Monitoring Panel -->
+        <div class="panel">
+            <h2>Logic Monitor</h2>
+            <table id="truth-table">
+                <thead>
+                    <tr>
+                        <th>X1</th>
+                        <th>X2</th>
+                        <th>Target</th>
+                        <th>Output</th>
+                        <th>LED</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- JS populated -->
+                </tbody>
+            </table>
+
+            <h2 style="margin-top:20px">Decision Boundary</h2>
+            <canvas id="boundary-canvas" width="300" height="300"></canvas>
+        </div>
+
+        <!-- Progression Panel -->
+        <div class="panel full-width">
+            <h2>Parameter Progression</h2>
+            <canvas id="progression-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================================
+        // Configuration
+        // =====================================================================
+        const K_SIGMOID = 2.0;
+        const BETA_SOFTPLUS = 0.5;  // Lower = smoother, more gradient flow
+        const LEARNING_RATE = 0.05;  // Lower LR improves convergence for OR-like functions
+        const MAX_EPOCHS = 500;
+
+        // Circuit parameters (randomized on load)
+        let params = {
+            w1: (Math.random() - 0.5),
+            w2: (Math.random() - 0.5),
+            w3: (Math.random() - 0.5),
+            w4: (Math.random() - 0.5),
+            t: (Math.random() - 0.5) * 2
+        };
+
+        // Target functions
+        const targetFunctions = {
+            xor:  (x1, x2) => (x1 > 0) !== (x2 > 0) ? 1 : 0,
+            xnor: (x1, x2) => (x1 > 0) === (x2 > 0) ? 1 : 0,
+            and:  (x1, x2) => (x1 > 0) && (x2 > 0) ? 1 : 0,
+            or:   (x1, x2) => (x1 > 0) || (x2 > 0) ? 1 : 0,
+            nand: (x1, x2) => !((x1 > 0) && (x2 > 0)) ? 1 : 0,
+            nor:  (x1, x2) => !((x1 > 0) || (x2 > 0)) ? 1 : 0
+        };
+
+        const INPUT_STATES = [[-9, -9], [-9, 9], [9, -9], [9, 9]];
+
+        // =====================================================================
+        // Circuit Model (v5b-A: Intuitive Sign Convention)
+        // =====================================================================
+        // h1 = (w1*x1 + w2*x2) / 2
+        // h2 = (w3*x1 + w4*x2) / 2
+        // a1 = max(0, h1), a2 = max(0, h2)
+        // h3 = (a1 + a2) / 2
+        // y = 1 if h3 > t else 0
+
+        function sigmoid(x, k = K_SIGMOID) {
+            return 1 / (1 + Math.exp(-k * x));
+        }
+
+        function softplus(x, beta = BETA_SOFTPLUS) {
+            // Smooth approximation to ReLU: log(1 + e^(beta*x)) / beta
+            // Provides non-zero gradients even when x < 0
+            if (x * beta > 20) return x;  // Avoid overflow
+            return Math.log(1 + Math.exp(beta * x)) / beta;
+        }
+
+        function forward(x1, x2, p, useStep = true) {
+            const h1 = (p.w1 * x1 + p.w2 * x2) / 2;
+            const h2 = (p.w3 * x1 + p.w4 * x2) / 2;
+            const a1 = Math.max(0, h1);
+            const a2 = Math.max(0, h2);
+            const h3 = (a1 + a2) / 2;
+            
+            if (useStep) {
+                return h3 > p.t ? 1 : 0;
+            } else {
+                return sigmoid(h3 - p.t);
+            }
+        }
+
+        function checkConverged(p, targetFunc) {
+            return INPUT_STATES.every(([x1, x2]) => 
+                forward(x1, x2, p, true) === targetFunc(x1, x2)
+            );
+        }
+
+        // =====================================================================
+        // Adam Optimizer
+        // =====================================================================
+        let adamState = {
+            m: { w1: 0, w2: 0, w3: 0, w4: 0, t: 0 },
+            v: { w1: 0, w2: 0, w3: 0, w4: 0, t: 0 },
+            step: 0
+        };
+
+        function resetAdam() {
+            adamState.m = { w1: 0, w2: 0, w3: 0, w4: 0, t: 0 };
+            adamState.v = { w1: 0, w2: 0, w3: 0, w4: 0, t: 0 };
+            adamState.step = 0;
+        }
+
+        function getGradientForSample(p, x1, x2, target) {
+            const grads = { w1: 0, w2: 0, w3: 0, w4: 0, t: 0 };
+
+            // Forward pass with softplus (for smooth gradients)
+            const h1 = (p.w1 * x1 + p.w2 * x2) / 2;
+            const h2 = (p.w3 * x1 + p.w4 * x2) / 2;
+            const a1 = softplus(h1);
+            const a2 = softplus(h2);
+            const h3 = (a1 + a2) / 2;
+            const y_soft = sigmoid(h3 - p.t);
+
+            // Backward pass (cross-entropy + sigmoid)
+            const dL = y_soft - target;
+
+            // Softplus derivative is sigmoid(beta * x)
+            // This provides non-zero gradients even when h < 0
+            const da1_dh1 = sigmoid(h1 * BETA_SOFTPLUS, 1.0);
+            const da2_dh2 = sigmoid(h2 * BETA_SOFTPLUS, 1.0);
+
+            const dL_dh1 = dL * 0.5 * da1_dh1;
+            const dL_dh2 = dL * 0.5 * da2_dh2;
+
+            // Update ALL weights (no random selection needed with softplus)
+            grads.w1 = dL_dh1 * x1 / 2;
+            grads.w2 = dL_dh1 * x2 / 2;
+            grads.w3 = dL_dh2 * x1 / 2;
+            grads.w4 = dL_dh2 * x2 / 2;
+            grads.t = -dL;
+
+            return grads;
+        }
+
+        function adamStep(p, grads) {
+            const beta1 = 0.9, beta2 = 0.999, eps = 1e-8;
+            adamState.step++;
+            const t = adamState.step;
+            
+            ['w1', 'w2', 'w3', 'w4', 't'].forEach(key => {
+                const g = grads[key];
+                adamState.m[key] = beta1 * adamState.m[key] + (1 - beta1) * g;
+                adamState.v[key] = beta2 * adamState.v[key] + (1 - beta2) * g * g;
+                
+                const m_hat = adamState.m[key] / (1 - Math.pow(beta1, t));
+                const v_hat = adamState.v[key] / (1 - Math.pow(beta2, t));
+                
+                p[key] -= LEARNING_RATE * m_hat / (Math.sqrt(v_hat) + eps);
+            });
+            
+            // Clamp
+            ['w1', 'w2', 'w3', 'w4'].forEach(k => {
+                p[k] = Math.max(-1, Math.min(1, p[k]));
+            });
+            p.t = Math.max(-4.5, Math.min(4.5, p.t));
+        }
+
+        // =====================================================================
+        // UI & Visualization
+        // =====================================================================
+        const boundaryCtx = document.getElementById('boundary-canvas').getContext('2d');
+        let chart;
+
+        function initChart() {
+            const ctx = document.getElementById('progression-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'w1', data: [], borderColor: '#ef4444', fill: false, tension: 0.1, borderWidth: 2 },
+                        { label: 'w2', data: [], borderColor: '#f97316', fill: false, tension: 0.1, borderWidth: 2 },
+                        { label: 'w3', data: [], borderColor: '#eab308', fill: false, tension: 0.1, borderWidth: 2 },
+                        { label: 'w4', data: [], borderColor: '#10a37f', fill: false, tension: 0.1, borderWidth: 2 },
+                        { label: 'T/4.5', data: [], borderColor: '#8b5cf6', fill: false, tension: 0.1, borderWidth: 2, borderDash: [5, 5] }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: -1.1,
+                            max: 1.1,
+                            title: { display: true, text: 'Value', color: '#6e6e80' },
+                            grid: { color: 'rgba(0,0,0,0.08)' },
+                            ticks: { color: '#6e6e80' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Epoch', color: '#6e6e80' },
+                            grid: { color: 'rgba(0,0,0,0.08)' },
+                            ticks: { color: '#6e6e80' }
+                        }
+                    },
+                    animation: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#353740' }
+                        }
+                    },
+                    elements: { line: { point: { radius: 0 } } }
+                }
+            });
+        }
+
+        function clearChart() {
+            chart.data.labels = [];
+            chart.data.datasets.forEach(d => d.data = []);
+            chart.update();
+        }
+
+        function addChartPoint(epoch) {
+            chart.data.labels.push(epoch);
+            chart.data.datasets[0].data.push(params.w1);
+            chart.data.datasets[1].data.push(params.w2);
+            chart.data.datasets[2].data.push(params.w3);
+            chart.data.datasets[3].data.push(params.w4);
+            chart.data.datasets[4].data.push(params.t / 4.5);
+            chart.update('none');
+        }
+
+        function updateUI() {
+            // Sync sliders with params
+            ['w1', 'w2', 'w3', 'w4'].forEach(id => {
+                document.getElementById(id).value = params[id];
+                document.getElementById('val-' + id).innerText = params[id].toFixed(2);
+            });
+            document.getElementById('t').value = params.t;
+            document.getElementById('val-t').innerText = params.t.toFixed(1) + 'V';
+
+            updateTruthTable();
+            drawBoundary();
+        }
+
+        function updateTruthTable() {
+            const targetName = document.getElementById('target-func').value;
+            const targetFunc = targetFunctions[targetName];
+            const tbody = document.querySelector('#truth-table tbody');
+            tbody.innerHTML = '';
+
+            INPUT_STATES.forEach(([x1, x2]) => {
+                const target = targetFunc(x1, x2);
+                const output = forward(x1, x2, params, true);
+                const match = output === target;
+                
+                const tr = document.createElement('tr');
+                tr.className = match ? 'match' : 'mismatch';
+                tr.innerHTML = `
+                    <td>${x1 > 0 ? '+9V' : '-9V'}</td>
+                    <td>${x2 > 0 ? '+9V' : '-9V'}</td>
+                    <td>${target}</td>
+                    <td>${output}</td>
+                    <td><div class="led ${output ? 'on' : ''}"></div></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function drawBoundary() {
+            const size = 300;
+            const ctx = boundaryCtx;
+
+            // Clear and draw background
+            ctx.fillStyle = '#f7f7f8';
+            ctx.fillRect(0, 0, size, size);
+
+            // Sample the decision boundary
+            const resolution = 100;
+            const step = 20 / resolution;
+
+            ctx.fillStyle = '#10a37f';
+            for (let i = 0; i < resolution; i++) {
+                for (let j = 0; j < resolution; j++) {
+                    const x = -10 + i * step + step/2;
+                    const y = -10 + j * step + step/2;
+
+                    if (forward(x, y, params, true) === 1) {
+                        const px = (i / resolution) * size;
+                        const py = size - ((j + 1) / resolution) * size;
+                        ctx.fillRect(px, py, size/resolution + 1, size/resolution + 1);
+                    }
+                }
+            }
+
+            // Draw axes
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(size/2, 0);
+            ctx.lineTo(size/2, size);
+            ctx.moveTo(0, size/2);
+            ctx.lineTo(size, size/2);
+            ctx.stroke();
+
+            // Draw input points
+            const targetName = document.getElementById('target-func').value;
+            const targetFunc = targetFunctions[targetName];
+
+            INPUT_STATES.forEach(([x1, x2]) => {
+                const px = ((x1 + 10) / 20) * size;
+                const py = size - ((x2 + 10) / 20) * size;
+                const target = targetFunc(x1, x2);
+                const output = forward(x1, x2, params, true);
+
+                // Outer ring shows target
+                ctx.beginPath();
+                ctx.arc(px, py, 8, 0, Math.PI * 2);
+                ctx.fillStyle = target ? '#10a37f' : '#f7f7f8';
+                ctx.fill();
+                ctx.strokeStyle = '#353740';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Inner dot shows match/mismatch
+                if (output !== target) {
+                    ctx.beginPath();
+                    ctx.arc(px, py, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fill();
+                }
+            });
+        }
+
+        // =====================================================================
+        // Event Handlers
+        // =====================================================================
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                params[e.target.id] = parseFloat(e.target.value);
+                updateUI();
+            });
+        });
+
+        document.getElementById('target-func').addEventListener('change', updateUI);
+
+        document.getElementById('btn-random').addEventListener('click', () => {
+            params.w1 = (Math.random() - 0.5);
+            params.w2 = (Math.random() - 0.5);
+            params.w3 = (Math.random() - 0.5);
+            params.w4 = (Math.random() - 0.5);
+            params.t = (Math.random() - 0.5) * 2;
+            
+            clearChart();
+            updateUI();
+            document.getElementById('status').innerText = 'Parameters randomized.';
+        });
+
+        let training = false;
+        document.getElementById('btn-run').addEventListener('click', async () => {
+            if (training) return;
+            training = true;
+            document.getElementById('btn-run').disabled = true;
+            document.getElementById('btn-random').disabled = true;
+
+            const targetName = document.getElementById('target-func').value;
+            const targetFunc = targetFunctions[targetName];
+
+            clearChart();
+            resetAdam();
+
+            let converged = false;
+            let convergedAtEpoch = -1;
+            const EXTRA_EPOCHS = 10;  // Continue training after convergence for stability
+
+            for (let epoch = 0; epoch < MAX_EPOCHS && !converged; epoch++) {
+                // Batch gradient descent: compute gradients for all samples, average, then update
+                const batchGrads = { w1: 0, w2: 0, w3: 0, w4: 0, t: 0 };
+
+                for (const [x1, x2] of INPUT_STATES) {
+                    const target = targetFunc(x1, x2);
+                    const grads = getGradientForSample(params, x1, x2, target);
+                    batchGrads.w1 += grads.w1;
+                    batchGrads.w2 += grads.w2;
+                    batchGrads.w3 += grads.w3;
+                    batchGrads.w4 += grads.w4;
+                    batchGrads.t += grads.t;
+                }
+
+                // Average gradients
+                batchGrads.w1 /= 4;
+                batchGrads.w2 /= 4;
+                batchGrads.w3 /= 4;
+                batchGrads.w4 /= 4;
+                batchGrads.t /= 4;
+
+                // Single Adam update per epoch
+                adamStep(params, batchGrads);
+
+                // Record for chart
+                if (epoch % 2 === 0) {
+                    addChartPoint(epoch);
+                }
+
+                // Update UI periodically
+                if (epoch % 5 === 0) {
+                    updateUI();
+                    await new Promise(r => setTimeout(r, 5));
+                }
+
+                // Check convergence
+                if (convergedAtEpoch < 0 && checkConverged(params, targetFunc)) {
+                    convergedAtEpoch = epoch;
+                }
+
+                // Status message
+                if (convergedAtEpoch >= 0) {
+                    const extraDone = epoch - convergedAtEpoch;
+                    document.getElementById('status').innerText =
+                        `Converged! Stabilizing... ${extraDone}/${EXTRA_EPOCHS}`;
+                    if (extraDone >= EXTRA_EPOCHS) {
+                        converged = true;
+                        addChartPoint(epoch);
+                        document.getElementById('status').innerText =
+                            `Converged in ${convergedAtEpoch + 1} epochs`;
+                    }
+                } else {
+                    document.getElementById('status').innerText =
+                        `Optimizing... Epoch ${epoch + 1}/${MAX_EPOCHS}`;
+                }
+            }
+
+            updateUI();
+            document.getElementById('btn-run').disabled = false;
+            document.getElementById('btn-random').disabled = false;
+            training = false;
+
+            if (!converged) {
+                document.getElementById('status').innerText =
+                    `Did not converge after ${MAX_EPOCHS} epochs. Try again!`;
+            }
+        });
+
+        // Initialize
+        initChart();
+        updateUI();
+    </script>
+</body>
+</html>

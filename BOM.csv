@@ -1,0 +1,18 @@
+Designator,Value,Description,Qty,Notes
+U1,TL074,Quad JFET Op-Amp DIP-14,1,OA1-OA4
+U2,TL074,Quad JFET Op-Amp DIP-14,1,OA5-OA8
+R1-R4,10kΩ,Resistor 1/4W 5%,4,Input buffer feedback
+R5-R6,10kΩ,Resistor 1/4W 5%,2,Hidden summer inputs (unit 1)
+R7,4.7kΩ,Resistor 1/4W 5%,1,Hidden summer feedback (unit 1)
+R8-R9,10kΩ,Resistor 1/4W 5%,2,Hidden summer inputs (unit 2)
+R10,4.7kΩ,Resistor 1/4W 5%,1,Hidden summer feedback (unit 2)
+R11-R12,10kΩ,Resistor 1/4W 5%,2,Rectifier bleed resistors
+R13-R14,10kΩ,Resistor 1/4W 5%,2,Output summer inputs
+R15,4.7kΩ,Resistor 1/4W 5%,1,Output summer feedback
+R16,4.7kΩ,Resistor 1/4W 5%,1,LED current limiter
+D1-D2,1N4148,Signal Diode,2,Precision rectifiers
+LED1,Red LED,Standard 5mm Red LED,1,Output indicator
+W1-W4,10kΩ,Linear Potentiometer (B10K),4,Weight controls
+T,10kΩ,Linear Potentiometer (B10K),1,Threshold control
+SW1-SW2,SPDT,Toggle Switch On-On,2,Input selectors
+BAT1-BAT2,9V,9V Battery + Snap Connector,2,Wired in series for ±9V
