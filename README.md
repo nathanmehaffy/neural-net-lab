@@ -39,7 +39,7 @@ y = 1 if hy > t else 0
 Simply select your target function and press the optimize button, then transfer the weight values to the potentiometers on your circuit.
 (Note that depending on how you wired your circuit, you may need to invert each of the weight values.)
 
-(Can be used online at [https://nathanmehaffy.github.io/neural-net-lab/])
+(Can be used online at [nathanmehaffy.github.io/neural-net-lab](https://nathanmehaffy.github.io/neural-net-lab/))
 
 ### Manual
 
