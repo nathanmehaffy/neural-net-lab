@@ -22,7 +22,7 @@ Threshold: t in [-9, 9]
 
 Hidden layer:
 h1 = (w1 * x1 + w2 * x2) * -0.47
-h2 = (w3 * x1 + x4 * x2) * -0.47
+h2 = (w3 * x1 + w4 * x2) * -0.47
 a1 = max(0, h1)
 a2 = max(0, h2)
 
