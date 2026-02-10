@@ -1,0 +1,122 @@
+Analog Neural Network (2-2-1) - Circuit Netlist
+================================================
+Topology: Bare diode rectifiers (no precision rectifier op-amps)
+
+Node Key:
+  V+      = +9V rail
+  V-      = -9V rail
+  GND     = 0V ground (battery midpoint)
+  X1      = Input 1 (switch 1 common)
+  X2      = Input 2 (switch 2 common)
+  INV_X1  = Inverted input 1 (OA1 output, = -X1)
+  INV_X2  = Inverted input 2 (OA2 output, = -X2)
+  N1      = OA1 inverting summing node
+  N2      = OA2 inverting summing node
+  W1_OUT  = Weight pot 1 wiper output
+  W2_OUT  = Weight pot 2 wiper output
+  W3_OUT  = Weight pot 3 wiper output
+  W4_OUT  = Weight pot 4 wiper output
+  SUM1    = OA3 inverting summing node (hidden neuron 1)
+  H1      = OA3 output (hidden sum 1)
+  SUM2    = OA4 inverting summing node (hidden neuron 2)
+  H2      = OA4 output (hidden sum 2)
+  A1      = Rectified activation 1 (D1 cathode / R11 top)
+  A2      = Rectified activation 2 (D2 cathode / R12 top)
+  SUM3    = OA5 inverting summing node (output neuron)
+  HY      = OA5 output (output sum)
+  T_OUT   = Threshold pot wiper output
+  Y       = OA6 output (final binary decision)
+
+
+=== POWER SUPPLY ===
+
+V1  9V battery  [+ = V+,  - = GND]
+V2  9V battery  [+ = GND, - = V-]
+    (V1 and V2 in series: +9V / GND / -9V)
+
+
+=== INPUT SWITCHES (SPDT, select +9V or -9V per input) ===
+
+SW1  SPDT toggle  [pos1 = V+, pos2 = V-, common = X1]   ; Input 1 selector
+SW2  SPDT toggle  [pos1 = V+, pos2 = V-, common = X2]   ; Input 2 selector
+
+
+=== INPUT BUFFER INVERTERS (gain = -R_fb/R_in = -1) ===
+
+R1   10k resistor  [X1, N1]         ; OA1 input resistor
+R2   10k resistor  [N1, INV_X1]     ; OA1 feedback resistor
+OA1  op-amp (U1a)  [- = N1, + = GND, out = INV_X1]
+    ; Inverting amplifier: INV_X1 = -X1
+
+R3   10k resistor  [X2, N2]         ; OA2 input resistor
+R4   10k resistor  [N2, INV_X2]     ; OA2 feedback resistor
+OA2  op-amp (U1b)  [- = N2, + = GND, out = INV_X2]
+    ; Inverting amplifier: INV_X2 = -X2
+
+
+=== WEIGHT POTENTIOMETERS (blend raw and inverted inputs, w in [-1, +1]) ===
+
+W1  10k pot  [top = X1, bottom = INV_X1, wiper = W1_OUT]   ; weight w1 * x1
+W2  10k pot  [top = X2, bottom = INV_X2, wiper = W2_OUT]   ; weight w2 * x2
+W3  10k pot  [top = X1, bottom = INV_X1, wiper = W3_OUT]   ; weight w3 * x1
+W4  10k pot  [top = X2, bottom = INV_X2, wiper = W4_OUT]   ; weight w4 * x2
+    ; Each pot sweeps from +input to -input, giving w*x
+
+
+=== HIDDEN LAYER INVERTING SUMMERS (gain per input = -R_fb/R_in = -0.47) ===
+
+R5   10k resistor   [W1_OUT, SUM1]   ; Hidden neuron 1 input from w1*x1
+R6   10k resistor   [W2_OUT, SUM1]   ; Hidden neuron 1 input from w2*x2
+R7   4.7k resistor  [SUM1, H1]       ; OA3 feedback resistor
+OA3  op-amp (U1c)   [- = SUM1, + = GND, out = H1]
+    ; h1 = -(4.7/10) * (w1*x1 + w2*x2) = -0.47 * (w1*x1 + w2*x2)
+
+R8   10k resistor   [W3_OUT, SUM2]   ; Hidden neuron 2 input from w3*x1
+R9   10k resistor   [W4_OUT, SUM2]   ; Hidden neuron 2 input from w4*x2
+R10  4.7k resistor  [SUM2, H2]       ; OA4 feedback resistor
+OA4  op-amp (U1d)   [- = SUM2, + = GND, out = H2]
+    ; h2 = -(4.7/10) * (w3*x1 + w4*x2) = -0.47 * (w3*x1 + w4*x2)
+
+
+=== BARE DIODE RECTIFIERS (ReLU activation: a ≈ max(0, h - 0.6)) ===
+
+D1   1N4148 diode   [anode = H1, cathode = A1]
+R11  10k resistor   [A1, GND]        ; Pull-down to hold A1 at GND when D1 off
+    ; When H1 > ~0.6V: D1 conducts, A1 ≈ H1 - 0.6V
+    ; When H1 < ~0.6V: D1 off, R11 pulls A1 to GND
+    ; a1 ≈ max(0, h1 - 0.6)
+
+D2   1N4148 diode   [anode = H2, cathode = A2]
+R12  10k resistor   [A2, GND]        ; Pull-down
+    ; a2 ≈ max(0, h2 - 0.6)
+
+
+=== OUTPUT INVERTING SUMMER (gain per input = -R_fb/R_in = -0.47) ===
+
+R13  10k resistor   [A1, SUM3]       ; Output neuron input from a1
+R14  10k resistor   [A2, SUM3]       ; Output neuron input from a2
+R15  4.7k resistor  [SUM3, HY]       ; OA5 feedback resistor
+OA5  op-amp (U2a)   [- = SUM3, + = GND, out = HY]
+    ; hy = -(4.7/10) * (a1 + a2) = -0.47 * (a1 + a2)
+
+
+=== OUTPUT COMPARATOR (threshold decision) ===
+
+T    10k pot         [top = V-, bottom = V+, wiper = T_OUT]
+    ; Threshold sweeps from -9V to +9V
+
+OA6  op-amp (U2b)    [- = T_OUT, + = HY, out = Y]
+    ; Comparator: Y = +9V if HY > T_OUT, else Y = -9V
+
+
+=== OUTPUT INDICATOR ===
+
+R16  4.7k resistor   [Y, LED1_anode]   ; LED current limiter
+D3   Red LED         [anode = LED1_anode, cathode = V-]
+    ; LED on when Y = +9V (output = 1); ~1.9 mA through LED
+
+
+=== IC PACKAGES (power not shown in schematic, implicit) ===
+
+U1  TL074 Quad Op-Amp DIP-14  [V+ = V+, V- = V-]  ; Contains OA1, OA2, OA3, OA4
+U2  TL072 Dual Op-Amp DIP-8   [V+ = V+, V- = V-]  ; Contains OA5 (summer), OA6 (comparator)
