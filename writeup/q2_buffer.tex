@@ -1,0 +1,77 @@
+\titledquestion{Buffer (Unity-Gain Amplifier)}
+
+Before we build amplifiers, let's see why op-amps are useful even when the output voltage equals the input. The \emph{buffer} (also called a voltage follower) has very high input impedance and very low output impedance, which prevents one stage from ``loading'' another.
+
+Construct the following circuit in Figure \ref{fig:vdiv}. The goal of this circuit is to divide down the initial voltage, $5$V, twice. Connect 5V from the breadboard power supply as the power supply for this circuit and measure $V_{A}$ and $V_{out}$ with your multimeter. $R_{1,2,3,4} = 10 \si{\kilo\ohm}$.
+
+\begin{figure}[h]
+	\centering
+	\begin{circuitikz}[american,scale=1.25,transform shape]
+		\draw (0,0) node[sground] {} to[vsource,invert,l=$5$V] ++(0,2) to[short] ++(1,0) to[R,l=$R_1$] ++(3,0) to[short, *-] ++(0,0) coordinate(center) to[R,l=$R_3$] ++(3,0) to[short, *-] ++(0,0) to[R,l=$R_4$] ++(0,-2) node[sground] {};
+		\draw (center) node[anchor=south]{$V_{A}$} to[R,l_=$R_2$] ++(0,-2) node[sground] {};
+		\draw (7.5,2.5) node[anchor=north] {$V_{out}$};
+		\draw[blue, dashed] (8,-1.5) rectangle (4.5,3);
+		\node[blue, above] at (6.25,-1.5){\footnotesize Voltage Divider};
+		\draw[blue, dashed] (1,-1.5) rectangle (4.5,3);
+		\node[blue, above] at (2.75,-1.5){\footnotesize Voltage Divider};
+	\end{circuitikz}
+	\caption{Cascading Voltage Dividers}
+	\label{fig:vdiv}
+\end{figure}
+
+\begin{parts}
+	\part[3] Measure the voltages $V_A$ and $V_{out}$ with your voltmeter:
+	\medbreak
+	\begin{center}
+		\setlength{\tabcolsep}{14pt}
+		\begin{tabular}{|c|c|} \hline
+			\bm{$V_{A}$} & \bm{$V_{out}$} \\ \hline
+		  \hspace{1cm} \rule{0pt}{3em} &  \hspace{1cm} \\ \hline
+		\end{tabular}
+	\end{center}
+
+	\part[2] Is the circuit dividing the voltage in half twice (i.e.\ is $V_{out} = \frac{V_{in}}{4}$)? Explain why or why not.
+
+	\makeemptybox{4cm}
+
+\pagebreak
+
+	\uplevel{Now we introduce a unity-gain buffer between the two voltage dividers. Build the circuit in Figure \ref{fig:buff2} and perform the same measurements. When you see an op amp from now on, the $+9$V and $-9$V supply rails are implied. $R_{1,2,3,4} = 1\si{\kilo\ohm}$.}
+
+	\begin{figure}[h]
+		\centering
+		\begin{circuitikz}[american]
+		\draw (5.19,2.5) node[op amp] (opamp) {\tiny \texttt{TL072}};
+		\draw (0,0) node[sground] {} to[vsource,invert,l=$5$V] ++(0,2) to[short] ++(0.5,0) to[R,l=$R_1$] ++(3,0) to[short, *-] ++(0,0) node[] (center) {} to[short] (opamp.+);
+		\draw (opamp.-) to[short,-] ++(0,1) coordinate (leftR)
+  			  to[short] (leftR -| opamp.out)
+ 			  to[short,-*] (opamp.out) to[short,-] ++(0.5,0) -| ++(0,-0.49) to[short] ++(0,0) to[R,l=$R_3$] ++(3,0) node[anchor=south] {$V_{out}$} to[short, *-] ++(0,-0.5) to[R,l_=$R_4$] ++(0,-1.51) node[sground] {};
+ 		\draw (opamp.+) ++(-0.5,0) node[anchor=south]{$V_A$} to[short, -] ++(0,-0.5) to[R,l_=$R_2$] ++(0,-1.51) node[sground] {};
+ 		\draw[blue, dashed] (.65,-1.5) rectangle (3.85,5);
+		\node[blue, above] at (2.25,-1.5){\footnotesize Voltage Divider};
+		\draw[blue, dashed] (3.85,-1.5) rectangle (7,5);
+		\node[blue, above] at (5.5,-1.5){\footnotesize Buffer};
+		\draw[blue, dashed] (7,-1.5) rectangle (10.5,5);
+		\node[blue, above] at (8.75,-1.5){\footnotesize Voltage Divider};
+		\end{circuitikz}
+		\caption{Consecutive voltage dividers separated by op amp buffer}
+		\label{fig:buff2}
+	\end{figure}
+
+	\vspace{-\baselineskip}
+
+    \part[3] Measure the voltages $V_A$ and $V_{out}$ with your voltmeter:
+	\medbreak
+	\begin{center}
+		\setlength{\tabcolsep}{14pt}
+		\begin{tabular}{|c|c|} \hline
+			\bm{$V_{A}$} & \bm{$V_{out}$} \\ \hline
+		  \hspace{1cm} \rule{0pt}{3em} & \hspace{1cm} \\ \hline
+		\end{tabular}
+	\end{center}
+
+	\part[2] Explain why buffering the voltage dividers causes the correct level of voltage division. Refer to the input and output resistances of the op amp in your answer.
+
+	\makeemptybox{4cm}
+\end{parts}
+\pagebreak

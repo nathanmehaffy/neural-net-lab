@@ -1,0 +1,37 @@
+\documentclass[11pt,addpoints]{exam}
+% Lab revised by:
+% Aakash N. Maskeri and Nathan Mehaffy
+% Assignment Info
+\newcommand{\courseno}{18-100}
+\newcommand{\coursename}{Intro to Electrical and Computer Engineering}
+\newcommand{\fullcoursename}{\courseno: \coursename}
+\newcommand{\semester}{Spring 2026}
+\newcommand{\assignmenttype}{LAB}
+\newcommand{\assignmentnumber}{05}
+\newcommand{\assignmentname}{Op-Amp Neural Network}
+\newcommand{\assignment}{\assignmenttype \assignmentnumber: \assignmentname}
+\newcommand{\due}{TBD}
+\newcommand{\demosdue}{TBD}
+\newcommand{\cmu}{\copyright{ }Carnegie Mellon University}
+
+% Template package and define image path
+\usepackage{ecetemplate}
+\graphicspath{{images/}}
+
+\begin{document}
+    \include{coverpage} % shared
+    \include{_outline} % table of contents
+    \include{intro}
+
+\begin{questions}
+    \begingradingrange{credit}
+    \include{q1_comparator}
+    \include{q2_buffer}
+    \include{q3_amplifiers}
+    \include{q4_summer}
+    \include{q5_rectifier}
+    \include{q6_ann}
+    \endgradingrange{credit}
+\end{questions}
+
+\end{document}

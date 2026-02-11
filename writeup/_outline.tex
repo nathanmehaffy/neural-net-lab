@@ -1,0 +1,58 @@
+\section{Lab Outline}
+In this lab, you will build an analog neural network from op-amp building blocks. Each section teaches a fundamental op-amp circuit, then you will wire them all together into a working 2-2-1 artificial neural network (ANN) that can learn any binary logic function.
+\vspace{-\baselineskip}
+\begin{enumerate}
+    \itemsep0pt
+    \item Introduction --- What Are We Building?
+    \item Comparator Light Switch
+    \item Buffer (Unity-Gain Amplifier)
+    \item Amplifiers (Non-Inverting and Inverting)
+    \item Inverting Summing Amplifier
+    \item Diode Rectifier
+    \item Putting It All Together --- The Analog Neural Network
+\end{enumerate}
+
+\subsection*{Small Group Check-off Circuits}
+\vspace{-1.1\baselineskip}
+\begin{todolist}
+    \item ANN Circuit --- demonstrate XOR and NAND
+\end{todolist}
+
+\vspace{-1.1\baselineskip}
+\subsection*{Equipment Required}
+\begin{itemize}
+    \itemsep0pt
+    \item 1x Breadboard
+    \item 2x 9V Battery with Battery Clip
+    \item 1x Digital Multimeter
+    \item 1x AD3 \{\texttt{Power Supply}, \texttt{Oscilloscope}, \texttt{Signal Generator}\}
+    \item 1x Wire Strippers
+    \item 1x Diagonal Cutters
+\end{itemize}
+
+\vspace{-1.1\baselineskip}
+\subsection*{Bill of Materials --- Final ANN Circuit (Section 6)}
+\begin{tabularx}{\linewidth}{XX}
+    3x TL072 Dual Op-Amp IC & 5x 10\si{\kilo\ohm} Linear Pot (\texttt{B10K}) \\
+    12x \resistorcode[0.5]{brown}{black}{orange} 10\si{\kilo\ohm} Resistor & 4x \resistorcode[0.5]{yellow}{violet}{red} 4.7\si{\kilo\ohm} Resistor \\
+    2x 1N4148 Signal Diode & 1x Red LED \\
+    2x SPDT Toggle Switch & 2x 9V Battery + Clip \\
+\end{tabularx}
+
+\medbreak
+\textit{Additional components for intermediate sections (1--4):}
+
+\begin{tabularx}{\linewidth}{XX}
+    1x LDR (CdS cell) --- Section 1 & 1x 20\si{\kilo\ohm} Pot (\texttt{B20K}) --- Section 3 \\
+    $\sim$5x \resistorcode[0.5]{brown}{black}{red} 1\si{\kilo\ohm} Resistor --- Sections 1--3 & \\
+\end{tabularx}
+
+\vspace{-\baselineskip}
+\subsection*{Pinouts}
+\begin{figure}[H]
+    \hspace{2.1em}\includegraphics[width=0.2\linewidth]{TL072_Pinout.png}
+
+    \hspace{3.1em}TL072 Op-Amp Pinout
+\end{figure}
+
+\pagebreak

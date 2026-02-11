@@ -1,0 +1,50 @@
+\titledquestion{Inverting Summing Amplifier}
+
+In our neural network, each hidden neuron needs to combine multiple weighted inputs into a single sum. The inverting summing amplifier does exactly this: it adds together several input voltages (each scaled by $-R_f / R_i$) and outputs their weighted sum.
+
+Assemble the following circuit in Figure \ref{fig:sia} on your breadboard. Use a 4.7\si{\kilo\ohm} resistor for $R_f$ and 10\si{\kilo\ohm} for each $R_i$. This gives a gain of $-4.7/10 = -0.47$ per input. Use a 1kHz 1$V_{pp}$ sine wave for $V_{in}$ and a DC voltage of 5V for the second input.
+
+\textbf{Build 3 of these} --- 2 for the hidden layer and 1 for the output layer of the ANN. Only take measurements on one.
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}[scale=1.2,transform shape,american]
+    % The Op-Amp
+    \draw (0, 0) node[op amp] (opamp) {\tiny TL072};
+
+    % Extending the inverting input line to create more room for the junction
+    \draw (opamp.-) -- ++(-1, 0) coordinate (summing_node);
+
+    % Input 1: Vin (W1)
+    \draw (summing_node) -- ++(0, 1.5)
+          to[R, l=$R_i$, *-] ++(-2, 0)
+          to[sV, v_=$V_{in}$ (\texttt{W1})] ++(0,-1.5) node[sground] {};
+
+    % Input 2: 5V DC Input
+    \draw (summing_node) -- ++(0, -1.5)
+          to[R, l=$R_i$, *-] ++(-2, 0)
+          to[V, v_=5V] ++(0,-1.5) node[sground] {};
+
+    % Feedback Loop
+    \draw (opamp.-) to[short,*-] ++(0,1.8) coordinate (leftR)
+        to[R, l=$R_f$] (leftR -| opamp.out)
+        to[short,-*] (opamp.out) to[short,-o] ++(1,0) node[anchor=west] {$V_{out}$};
+
+    % Grounding the Non-Inverting Input
+    \draw (opamp.+) to[short, -] ++(-0.5,0) node[sground] {};
+
+    \end{circuitikz}
+    \caption{Inverting Summing Amplifier}
+    \label{fig:sia}
+\end{figure}
+
+Connect CH1 to $V_{in}$ and CH2 to $V_{out}$.
+
+\begin{parts}
+\part[3] Paste a screenshot of your oscilloscope plot. Make sure both CH1 and CH2 are enabled and have the same voltage range (volts/div), and that both waveforms are clearly visible.
+
+\makessbox{5cm}
+
+\end{parts}
+
+\pagebreak

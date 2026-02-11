@@ -1,0 +1,135 @@
+\titledquestion{Amplifiers --- Non-Inverting and Inverting}
+
+Now we introduce \emph{gain}. The non-inverting and inverting amplifier topologies use negative feedback and a resistor ratio to amplify a signal. Both are essential building blocks: the \textbf{inverting amplifier} in particular will serve as the \textbf{input inverter} in our neural network.
+
+\subsection*{4A: Non-Inverting Amplifier}
+
+The non-inverting amplifier amplifies without flipping the sign of the input. Assemble the circuit in Figure \ref{fig:non-inverting-amp} on your breadboard. Use a 1kHz 1$V_{pp}$ sine wave for $V_{in}$. Supply $\pm$9V to the op amp rails. Use a 20\si{\kilo\ohm} potentiometer for $R_f$ and a 1\si{\kilo\ohm} resistor for $R_i$.
+
+\begin{figure}[h]
+	\centering
+	\begin{circuitikz}[scale=1.15,transform shape,american]
+  		\draw (0, 0) node[op amp] (opamp) {\tiny TL072}
+  			(opamp.-) to[R, l_=$R_i$] (-3, 0.5) node[sground] {};
+  		\draw (opamp.-) to[short,*-] ++(0,1) coordinate (leftR)
+  			to[vR, l=$R_f$, invert, mirror] (leftR -| opamp.out)
+ 			to[short,-*] (opamp.out) to[short,-o] ++(1,0) node[anchor=west] {$V_{out}$};
+ 		\draw (opamp.+) to[short, -] ++(-0.5,0) to[sV,l_=$V_{in}$ (\texttt{W1})] ++(0,-1.5) node[sground] {};
+	\end{circuitikz}
+	\caption{Non-Inverting Amplifier with Variable Gain}
+	\label{fig:non-inverting-amp}
+\end{figure}
+
+\subsection{Using the Signal Generator and Oscilloscope}
+
+In WaveForms, open the \texttt{Wavegen}. Read the following guide on how to configure and use the Signal Generator: \url{https://digilent.com/reference/test-and-measurement/guides/waveforms-waveform-generator}. Configure \texttt{Channel 1 (W1)} as follows:
+\medbreak
+
+\begin{center}
+\begingroup
+\setlength{\tabcolsep}{18pt}
+\begin{tabular}{|l|l|}\hline
+    \multicolumn{2}{|c|}{\texttt{Wavegen}} \\ \hline
+    \multicolumn{2}{|c|}{Type: Sine} \\ \hline
+    Frequency: 1kHz & Offset: 0V \\
+    Amplitude: 1V & Phase: 0 deg \\ \hline
+\end{tabular}
+\endgroup
+\end{center}
+
+\medbreak
+Connect \texttt{W1} to the positive terminal of $V_{in}$ and the AD3's \texttt{GND} to the negative terminal. Read the oscilloscope guide: \url{https://digilent.com/reference/test-and-measurement/guides/waveforms-oscilloscope}. Configure the following scope settings:
+\medbreak
+\begin{center}
+\begingroup
+\setlength{\tabcolsep}{18pt}
+\begin{tabular}{|l|l|l|}\hline
+\multicolumn{3}{|c|}{\texttt{Scope}} \\ \hline
+    \textbf{Time} & \textbf{Channels} & \textbf{Channel Settings} \\ \hline
+    Position: 0ms & Range: 500mV/div & Probe: 1X \\
+    Base: 1ms/div & Offset: 0V & \\ \hline
+\end{tabular}
+\endgroup
+\end{center}
+\medbreak
+Connect CH1 to $V_{in}$ and CH2 to $V_{out}$. Hit the \raisebox{-0.6ex}{\includegraphics[width=2cm]{waveforms_lab5_run.png}} button to start measuring.
+
+\begin{parts}
+\part[3] Set $R_f$ to $5\si{\kilo\ohm}$. Paste a screenshot of your oscilloscope plot. Make sure both CH1 and CH2 are enabled and have the same voltage range (volts/div), and that both waveforms are clearly visible.
+
+\makessbox{5cm}
+
+\part[2] Measure the peak-to-peak voltage at both the input and the output. What is the gain of this circuit?
+\medbreak
+
+\begin{tikzpicture}
+	\draw[black] (0,0) rectangle (3,1.5);
+	\draw[black] (0,2) rectangle (3,3.5);
+	\draw[black] (-1.5,1.75) -- (3.25,1.75);
+	\node[anchor=east] at (-0.15,2.75) {$V_{out}=$};
+	\node[anchor=east] at (-0.15,0.75) {$V_{in}=$};
+	\node[] at (-2.5,1.79) {\textbf{Gain =}};
+	\node[] at (3.65,1.74) {\textbf{=}};
+	\draw[black] (4.1,1) rectangle (7.1,2.5);
+	\node[] at (2.7,0.3) {$V$};
+	\node[] at (2.7,2.3) {$V$};
+\end{tikzpicture}
+
+\end{parts}
+
+\pagebreak
+
+\subsection*{4B: Inverting Amplifier --- The ANN Input Inverter}
+
+The inverting amplifier flips the sign of the input. In our neural network, we need inverted copies of each input so that our weight pots can sweep from $-1$ to $+1$. If we only had the raw input, the pots could only give us weights from 0 to 1.
+
+Assemble the circuit in Figure \ref{fig:ia} on your breadboard. Use a 10\si{\kilo\ohm} resistor for both $R_f$ and $R_i$. \textbf{Build 2 of these} --- these are the input inverters for the ANN. Only complete the following exercises for one of them.
+
+\begin{figure}[h]
+	\centering
+	\begin{circuitikz}[scale=1.2,transform shape,american]
+  	\draw (0, 0) node[op amp] (opamp) {\tiny TL072}
+  		(opamp.-) to[R, l_=$R_i$] (-3, 0.5) to[sV,v_=$V_{in}$ (\texttt{W1})] ++(0,-1.5) node[sground] {};
+  	\draw (opamp.-) to[short,*-] ++(0,1) coordinate (leftR)
+  		to[R, l=$R_f$] (leftR -| opamp.out)
+ 		to[short,-*] (opamp.out) to[short,-o] ++(1,0) node[anchor=west] {$V_{out}$};
+ 	\draw (opamp.+) to[short, -] ++(-0.5,0) node[sground] {};
+	\end{circuitikz}
+	\caption{Inverting Amplifier with Fixed Gain}
+	\label{fig:ia}
+\end{figure}
+\vspace{-\baselineskip}
+
+Connect CH1 to the input and CH2 to the output.
+
+\begin{parts}
+\setcounter{partno}{2}
+
+\part[3] Paste a screenshot of your oscilloscope plot. Make sure both CH1 and CH2 are enabled and have the same voltage range (volts/div), and that both waveforms are clearly visible.
+
+\makessbox{5cm}
+\medbreak
+
+\part[3] Using the oscilloscope, measure the peak-to-peak voltage at both the input and the output. What is the gain of this circuit?
+\medbreak
+
+\begin{tikzpicture}
+	\draw[black] (0,0) rectangle (3,1.5);
+	\draw[black] (0,2) rectangle (3,3.5);
+	\draw[black] (-1.5,1.75) -- (3.25,1.75);
+	\node[anchor=east] at (-0.15,2.75) {$V_{out}=$};
+	\node[anchor=east] at (-0.15,0.75) {$V_{in}=$};
+	\node[] at (-2.5,1.79) {\textbf{Gain =}};
+	\node[] at (3.65,1.74) {\textbf{=}};
+	\draw[black] (4.1,1) rectangle (7.1,2.5);
+	\node[] at (2.7,0.3) {$V$};
+	\node[] at (2.7,2.3) {$V$};
+\end{tikzpicture}
+
+\part[3] Calculate the gain for the circuit in Figure \ref{fig:ia} given an ideal op-amp. Show that, for the resistance values used, the ideal gain matches the gain you measured.
+
+\makeemptybox{2.5cm}
+
+\end{parts}
+
+\pagebreak

@@ -1,0 +1,183 @@
+\ProvidesPackage{ecetemplate}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{bm}
+%\usepackage{bodegraph} % not used in this lab; requires ifsym
+\usepackage{caption}
+\usepackage[american,nooldvoltagedirection]{circuitikz}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+\usepackage{float}
+\usepackage{listings}
+% fontawesome replacement: define symbols without the package
+\IfFileExists{fontawesome.sty}{\usepackage{fontawesome}}{%
+  \newcommand{\faExclamationTriangle}{\textbf{!}}%
+  \newcommand{\faInfoCircle}{\textbf{(i)}}%
+  \newcommand{\faSmileO}{\textbf{:)}}%
+}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{pgfplots}
+\usepackage{scrextend}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularx}
+%\usepackage{tabu} % disabled: known bugs with recent LaTeX; not used in this lab
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{wrapfig}
+
+% Reference Colors On
+\hypersetup{colorlinks=true}
+
+% pgfplots backwards compatibility
+\pgfplotsset{compat=1.16}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% Page Setup            %
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Page Margins
+\extrawidth{1in}
+\extraheadheight{-0.75in}
+\extrafootheight{-1in}
+\setlength{\parindent}{0in}
+\setlength{\parskip}{\baselineskip}
+
+% Page Header/Footer
+\headrule
+\header{\textbf{\courseno \, \assignmenttype\assignmentnumber}}{}{\semester}
+\runningfooter{\cmu}{}{Page \thepage\ of \numpages}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% Exam Class Setup      %
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Points Formatting
+\pointsinmargin\printanswers
+\pointformat{\fcolorbox{black}{yellow}{\thepoints}}
+\pointname{\;pts}
+\bonuspointformat{\fcolorbox{black}{magenta}{\thepoints}}
+\bonuspointname{\;bonus}
+
+% Question/Part Formatting
+\qformat{\Large\bf\thequestion. \thequestiontitle\hfill\vrule depth 1em width 0pt}
+\renewcommand{\questionshook}{\setlength{\topsep}{0pt}\vspace{-1.5\baselineskip}}
+\renewcommand{\partshook}{\setlength{\itemsep}{12pt}\setlength{\topsep}{12pt}}
+\renewcommand\partlabel{\textbf{\thepartno}}
+\renewcommand{\thepartno}{\thequestion.\arabic{partno}}
+
+% Solution Box Formatting
+\renewcommand{\solutiontitle}{}
+
+% Grade Table Formatting
+\makeatletter
+\patchcmd{\questions}
+  {\def\@currentlabel{\thequestiontitle}}
+  {\def\@currentlabel{\thequestion}}
+  {}
+  {}
+\makeatother
+
+% Section Header Formatting
+\titleformat{\section}{\normalfont\huge\bfseries\fullwidth}{}{0em}{\vspace{-0.5\baselineskip}}
+\titleformat{\subsection}{\normalfont\large\bfseries\fullwidth}{}{1.4em}{\vspace{-0.5\baselineskip}}
+\titleformat{name=\subsection,numberless}{\normalfont\large\bfseries\fullwidth}{}{0em}{\vspace{-0.5\baselineskip}} % use \subsection* to remove the indentation
+
+% Helpful Macros
+\newcommand\resistorcode[4][3]{\begin{tikzpicture}[scale=#1,transform shape]
+    \fill[color=brown!30] (0,0) circle (0.4);
+	\fill[color=brown!30] (1.75,0) circle (0.4);
+	\fill[color=brown!30] (0,-0.33) rectangle (1.75,0.33);
+	\fill[color=#2] (0.25,-0.33) rectangle (0.5,0.33);
+	\fill[color=#3] (0.75,-0.33) rectangle (1,0.33);
+	\fill[color=#4] (1.25,-0.33) rectangle (1.5,0.33);
+\end{tikzpicture}}
+
+\newcommand\capcode[3]{%
+  \tikz[baseline=(X.base)] 
+    \node (X) [draw, shape=circle, inner sep=0, fill=#1, text=#2] {\texttt{#3}};%
+}
+
+% For use in schematics / circuitikz
+\newcommand*{\equal}{=}
+
+% Helpful macros
+\newcommand{\savecircuit}{\hspace{-2.1em}\framebox[\linewidth]{\parbox{\linewidth}{\vspace{0.5em}\centering\textbf{\faExclamationTriangle \; Do NOT take your circuit apart yet! You will need it for lab checkoff!\vspace{0.25em}}}}}
+
+\newcommand{\warning}[2]{\framebox[#1]{\parbox{#1}{\vspace{0.5em}\centering\textbf{\faExclamationTriangle \; #2 \vspace{0.5em}}}}}
+
+\newcommand{\infotext}[2]{\framebox[#1]{\parbox{#1}{\vspace{0.5em}\centering\textbf{\faInfoCircle \; #2 \vspace{0.5em}}}}}
+
+\newcommand{\thankstext}[2]{\framebox[#1]{\parbox{#1}{\vspace{0.5em}\centering\textbf{\faSmileO \; #2 \vspace{0.5em}}}}}
+
+\newcommand{\appendsc}{$\square$ I have appended the screenshot to the back of my lab writeup}
+
+
+% Global Circuitikz Declarations
+\ctikzset{logic ports=ieee}
+\ctikzset{tripoles/mos style=arrows}
+\ctikzset{tripoles/pmos style/emptycircle}
+\ctikzset{transistors/arrow pos=end}
+
+\tikzset{opampdownlbl/.style={
+            below,
+            draw=none,
+            append after command={
+                (\tikzlastnode.north) edge ([shift={(-5pt,0pt)}]\tikzlastnode.north) edge ([shift={(+5pt,0pt)}]\tikzlastnode.north)
+            }},
+        opampuplbl/.style={
+            above,
+            draw=none,
+            append after command={
+                (\tikzlastnode.south) edge ([shift={(-5pt,0pt)}]\tikzlastnode.south) edge ([shift={(+5pt,0pt)}]\tikzlastnode.south)
+            }}}
+
+\tikzset{flipflop DL/.style={flipflop, flipflop def={t1=D, t3=E, t6=Q, t4={\ctikztextnot{Q}}
+}}}
+
+\newcommand{\makessbox}[1]{\begin{solution}
+        \vbox to #1{%
+        \vfill
+        \begin{center}
+        \texttt{Paste Screenshot Here} \\
+        \medbreak
+        \appendsc
+        \end{center}
+        \vfill
+        }%
+\end{solution}}
+
+% For check-off circuits todo lists
+\usepackage{enumitem,amssymb}
+\newlist{todolist}{itemize}{2}
+\setlist[todolist]{label=$\square$}
+
+% For timing diagrams (used in I2C lab, not this one)
+%\usepackage{tikz-timing} % requires ifsym
+
+% Color for answerkey
+\definecolor{darkgreen}{HTML}{227722}
+
+% Checkbox for answerkey
+\newcommand{\checkbox}{\makebox[0pt][l]{$\checkmark$}$\square$}
+
+% Rubric macros
+\newcommand{\correct}[2]{\textcolor{darkgreen}{\textbf{+#1 pts} #2}}
+\newcommand{\incorrect}[1]{\textcolor{red}{\textbf{+0 pts} #1}}
+
+\lstset{numbers=left,xleftmargin=.18in,numbersep=5pt,numberstyle=\color{gray}\ttfamily,tabsize=2,frame=l,language={C},basicstyle=\footnotesize\color{black}\ttfamily,
+    classoffset=0,
+    keywordstyle=\color{cyan}\ttfamily,
+    classoffset=1,
+    morekeywords={Serial,begin,Wire,println,delay,pinMode,analogWriteResolution,analogReadResolution,analogRead,analogWrite},keywordstyle=\color{orange}\ttfamily,
+    classoffset=0,
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{gray}\ttfamily}

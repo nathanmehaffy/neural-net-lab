@@ -1,0 +1,351 @@
+% q6_ann.tex
+
+% --- Custom Pic Definitions ---
+\tikzset{
+    invamp/.pic={
+        \draw [thick, fill=white] (-1,-1) rectangle (1,1);
+        \node [font=\small\bfseries, align=center] at (0,0) {Inv\\Amp};
+        \coordinate (-in) at (-1, 0);
+        \coordinate (-out) at (1, 0);
+        \node [right, font=\tiny] at (-in) {In};
+        \node [left, font=\tiny] at (-out) {Out};
+    },
+    sumamp/.pic={
+        \draw [thick, fill=white] (-1,-1.2) rectangle (1,1.2);
+        \node [font=\small\bfseries, align=center] at (0,0) {Sum\\Amp};
+        \coordinate (-in1) at (-1, 0.5);
+        \coordinate (-in2) at (-1, -0.5);
+        \coordinate (-out) at (1, 0);
+        \node [right, font=\tiny] at (-in1) {In1};
+        \node [right, font=\tiny] at (-in2) {In2};
+        \node [left, font=\tiny] at (-out) {Out};
+    },
+    dioderect/.pic={
+        \draw [thick, fill=white] (-1,-1) rectangle (1,1);
+        \node [font=\small\bfseries, align=center] at (0,0) {Diode\\Rect};
+        \coordinate (-in) at (-1, 0);
+        \coordinate (-out) at (1, 0);
+        \node [right, font=\tiny] at (-in) {In};
+        \node [left, font=\tiny] at (-out) {Out};
+    }
+}
+
+\titledquestion{Putting It All Together --- The Analog Neural Network}
+
+Now we connect all of our building blocks into the full neural network described in the Introduction. To keep the schematics readable, we will use the following block abstractions for circuits you have already built:
+
+\subsection*{Circuit Abstractions}
+
+% --- EQUIVALENCY 1: INVERTING AMPLIFIER ---
+\begin{figure}[h!]
+    \centering
+    \begin{minipage}{0.55\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape, american]
+            \draw (0,0) node[op amp] (opamp) {\tiny{TL072}};
+            \draw (opamp.-) to[R, l=$R_i$, *-o] ++(-2, 0) node[left] {$V_{in}$};
+            \draw (opamp.+) to[short] ++(-0.5,0) node[sground] {};
+            % Feedback Loop
+            \draw (opamp.-) -- ++(0, 1.5) coordinate (top)
+                  to[R, l=$R_f$] (top -| opamp.out)
+                  -- (opamp.out)
+                  to[short, -o] ++(0.5, 0) node[right] {Out};
+        \end{circuitikz}
+    \end{minipage}
+    \begin{minipage}{0.1\textwidth}
+        \centering \Huge $\Longrightarrow$
+    \end{minipage}
+    \begin{minipage}{0.25\textwidth}
+        \centering
+        \begin{circuitikz}
+            \draw (0,0) pic {invamp};
+        \end{circuitikz}
+    \end{minipage}
+    \caption{Abstraction of the Inverting Amplifier ($R_i = R_f = 10$k$\Omega$, gain $= -1$)}
+\end{figure}
+
+% --- EQUIVALENCY 2: SUMMING AMPLIFIER ---
+\begin{figure}[h!]
+    \centering
+    \begin{minipage}{0.55\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape, american]
+            \draw (0, 0) node[op amp] (opamp) {\tiny TL072};
+            % Move summing node slightly left of the op-amp input
+            \draw (opamp.-) -- ++(-0.5, 0) coordinate (summing_node);
+
+            % Input 1
+            \draw (summing_node) -- ++(0, 1) -- ++(-0.5,0)
+                  to[R, l=$R_i$, -o] ++(-1.5, 0) node[left] {$V_{in1}$};
+
+            % Input 2
+            \draw (summing_node) -- ++(0, -1) -- ++(-0.5,0)
+                  to[R, l=$R_i$, -o] ++(-1.5, 0) node[left] {$V_{in2}$};
+
+            % Feedback
+            \draw (opamp.-) to[short,*-] ++(0,1.5) coordinate (leftR)
+                to[R, l=$R_f$] (leftR -| opamp.out)
+                to[short,-*] (opamp.out) to[short,-o] ++(0.5,0) node[right] {$V_{out}$};
+            \draw (opamp.+) to[short, -] ++(-0.2,0) node[sground] {};
+        \end{circuitikz}
+    \end{minipage}
+    \begin{minipage}{0.1\textwidth}
+        \centering \Huge $\Longrightarrow$
+    \end{minipage}
+    \begin{minipage}{0.25\textwidth}
+        \centering
+        \begin{circuitikz}
+            \draw (0,0) pic {sumamp};
+        \end{circuitikz}
+    \end{minipage}
+    \caption{Abstraction of the Inverting Summing Amplifier ($R_i = 10$k$\Omega$, $R_f = 4.7$k$\Omega$, gain $= -0.47$ per input)}
+\end{figure}
+
+% --- EQUIVALENCY 3: DIODE RECTIFIER ---
+\begin{figure}[h!]
+    \centering
+    \begin{minipage}{0.55\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape, american]
+            % Input
+            \draw (-2, 0) node[left] {In} to[short, o-] ++(0.5,0)
+                to[diode, l=1N4148] ++(2.5, 0) coordinate (out_node);
+            % Output
+            \draw (out_node) to[short, -o] ++(1, 0) node[right] {Out};
+            % Pull-down
+            \draw (out_node) to[R, l_=10k$\Omega$, *-] ++(0, -2) node[sground] {};
+        \end{circuitikz}
+    \end{minipage}
+    \begin{minipage}{0.1\textwidth}
+        \centering \Huge $\Longrightarrow$
+    \end{minipage}
+    \begin{minipage}{0.25\textwidth}
+        \centering
+        \begin{circuitikz}
+            \draw (0,0) pic {dioderect};
+        \end{circuitikz}
+    \end{minipage}
+    \caption{Abstraction of the Diode Rectifier (1N4148 + 10k$\Omega$ pull-down)}
+\end{figure}
+
+\newpage
+\subsection*{7A: Input Stage}
+
+Each input switch selects $+9$V or $-9$V. An inverting amplifier creates the negated copy of each input. Four potentiometers blend the raw and inverted inputs, allowing each weight to sweep from $-1$ to $+1$.
+
+Wire up the circuit as shown below. Once complete, use a DMM to verify that each wiper ($w_1$ through $w_4$) can sweep from approximately $+9$V to $-9$V as you turn the pot.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{circuitikz}[american, transform shape, scale=0.8]
+
+% ---- Layout Coordinates ----
+\def\xSrc{-2.5}
+\def\xInv{0}
+\def\xRaw{-1.5}  % junction point, must be left of inv amp box (box left edge = \xInv - 1)
+\def\xPot{4}
+
+\def\yTop{2.2}
+\def\yBot{-2.2}
+
+% ==========================
+% TOP CHANNEL (Input 1)
+% ==========================
+
+% 1. DRAW AMPLIFIER FIRST
+\draw (\xInv,\yTop) pic (OA1) {invamp};
+
+% 2. Input Source & Switch
+\draw (\xSrc, \yTop) node[spdt, rotate=180] (SW1) {};
+\draw (SW1.in) -- (\xRaw, \yTop) coordinate (raw1) -- (OA1-in);
+\draw (SW1.out 2) -- ++(-0.5,0) node[left] {$+9$V};
+\draw (SW1.out 1) -- ++(-0.5,0) node[left] {$-9$V};
+
+% 3. Potentiometers (W1, W2)
+\draw (\xPot, \yTop+1.8) to[pR, n=W1, l_=W1] (\xPot, \yTop+0.5);
+\draw (\xPot, \yTop-0.5) to[pR, n=W2, l_=W2] (\xPot, \yTop-1.8);
+
+% 4. WIRING
+\draw (OA1-out) -- ++(1,0) coordinate (out_split1);
+\draw (out_split1) |- ([yshift=-0.1cm]W1.east);
+\draw (out_split1) |- ([yshift=-0.1cm]W2.east);
+
+% Raw input to pot tops: up over inv amp box, then split right to each pot
+\draw (raw1) |- ++(3, 1.5) coordinate (over1);
+\draw (over1) |- ([yshift=0.1cm]W1.west);
+\draw (over1) |- ([yshift=0.1cm]W2.west);
+\node[circ] at (raw1) {};
+
+% Label Wipers with Outputs
+\draw (W1.wiper) -- ++(0.5,0) node[right, font=\small] {$\; \; w_1$} to[short, -o] ++(0.2,0);
+\draw (W2.wiper) -- ++(0.5,0) node[right, font=\small] {$\; \;w_2$} to[short, -o] ++(0.2,0);
+
+% ==========================
+% BOTTOM CHANNEL (Input 2)
+% ==========================
+
+% 1. DRAW AMPLIFIER FIRST
+\draw (\xInv,\yBot) pic (OA2) {invamp};
+
+% 2. Input Source & Switch
+\draw (\xSrc, \yBot) node[spdt, rotate=180] (SW2) {};
+\draw (SW2.in) -- (\xRaw, \yBot) coordinate (raw2) -- (OA2-in);
+\draw (SW2.out 2) -- ++(-0.5,0) node[left] {$+9$V};
+\draw (SW2.out 1) -- ++(-0.5,0) node[left] {$-9$V};
+
+% 3. Potentiometers (W3, W4)
+\draw (\xPot, \yBot+1.8) to[pR, n=W3, l_=W3] (\xPot, \yBot+0.5);
+\draw (\xPot, \yBot-0.5) to[pR, n=W4, l_=W4] (\xPot, \yBot-1.8);
+
+% 4. WIRING
+\draw (OA2-out) -- ++(1,0) coordinate (out_split2);
+\draw (out_split2) |- ([yshift=-0.1cm]W3.east);
+\draw (out_split2) |- ([yshift=-0.1cm]W4.east);
+
+% Raw input to pot tops: up over inv amp box, then split right to each pot
+\draw (raw2) |- ++(3, 1.5) coordinate (over2);
+\draw (over2) |- ([yshift=0.1cm]W3.west);
+\draw (over2) |- ([yshift=0.1cm]W4.west);
+\node[circ] at (raw2) {};
+
+% Label Wipers with Outputs
+\draw (W3.wiper) -- ++(0.5,0) node[right, font=\small] {\; \;$w_3$} to[short, -o] ++(0.2,0);
+\draw (W4.wiper) -- ++(0.5,0) node[right, font=\small] {\; \;$w_4$} to[short, -o] ++(0.2,0);
+
+\end{circuitikz}
+}
+\end{center}
+
+\newpage
+\subsection*{7B: Hidden Layer}
+
+Connect the weight pot outputs ($w_1$ through $w_4$) to the inverting summers. The summer outputs pass through diode rectifiers, which cut off all negative voltages.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{circuitikz}[american, transform shape, scale=0.8]
+
+% ---- Layout Coordinates ----
+\def\xSum{0}
+\def\xRect{4}
+
+\def\yTop{2}
+\def\yBot{-2}
+
+% ==========================
+% TOP CHANNEL
+% ==========================
+% Summing Amp
+\draw (\xSum, \yTop) pic (Sum1) {sumamp};
+% Inputs
+\draw (Sum1-in1) to[short, -o] ++(-0.5,0) node[left] {$w_1$};
+\draw (Sum1-in2) to[short, -o] ++(-0.5,0) node[left] {$w_3$};
+
+% Diode Rectifier
+\draw (\xRect, \yTop) pic (Rect1) {dioderect};
+
+% Connections
+\draw (Sum1-out) -- (Rect1-in);
+\draw (Rect1-out) to[short, -o] ++(0.5,0) node[right] {$a_1$};
+
+
+% ==========================
+% BOTTOM CHANNEL
+% ==========================
+% Summing Amp
+\draw (\xSum, \yBot) pic (Sum2) {sumamp};
+% Inputs
+\draw (Sum2-in1) to[short, -o] ++(-0.5,0) node[left] {$w_2$};
+\draw (Sum2-in2) to[short, -o] ++(-0.5,0) node[left] {$w_4$};
+
+% Diode Rectifier
+\draw (\xRect, \yBot) pic (Rect2) {dioderect};
+
+% Connections
+\draw (Sum2-out) -- (Rect2-in);
+\draw (Rect2-out) to[short, -o] ++(0.5,0) node[right] {$a_2$};
+
+\end{circuitikz}
+}
+\end{center}
+
+\newpage
+\subsection*{7C: Output Stage}
+
+Connect the rectifier outputs ($a_1$, $a_2$) to the output inverting summer. Then connect the output summer to the non-inverting input of the comparator. Wire the threshold pot between $V+$ and $V-$ (wiper to the comparator's inverting input). Finally, connect the comparator output to the LED through a 4.7k$\Omega$ current-limiting resistor.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{circuitikz}[american, transform shape, scale=0.8]
+
+% ---- Comparator ----
+\draw (6,0) node[op amp] (OA6) {\tiny{TL072}};
+
+% ---- Summing Amp (placed so output y exactly matches OA6.+) ----
+\path let \p1=(OA6.+) in (0, \y1) pic (SumFinal) {sumamp};
+% Inputs from previous stage
+\draw (SumFinal-in1) to[short, -o] ++(-0.5,0) node[left] {$a_1$};
+\draw (SumFinal-in2) to[short, -o] ++(-0.5,0) node[left] {$a_2$};
+
+% Connect Summing Amp Output to Non-Inverting Input (+)
+\draw (SumFinal-out) -- (OA6.+);
+
+% ---- Threshold Pot ----
+\draw (OA6.-) -- ++(0,1) coordinate (trim_connect);
+\path (trim_connect)-- ++(-1.5,0) coordinate (pot_top);
+\draw (pot_top) to[pR, n=Trim, l=T 10k, mirror] ++(0,2) node[vcc]{+9V};
+\draw (Trim.west) -- ++(0,-0.5) node[vee]{-9V};
+\draw (Trim.wiper) -- (trim_connect);
+
+% ---- Output LED Circuit ----
+\draw (OA6.out) to[R, l=4.7k] ++(2.5,0)
+      to[led, l=Red LED, fill=red] ++(0,-2) node[vee]{-9V};
+
+\end{circuitikz}
+}
+\end{center}
+
+\newpage
+\subsection*{7D: Check-off}
+
+An online tuning tool is available at:
+\begin{center}
+\url{https://nathanmehaffy.github.io/neural-net-lab/}
+\end{center}
+This tool uses \textbf{gradient descent} --- the same optimization algorithm used to train real neural networks --- to find weight and threshold values that implement any target Boolean function. You will use it to program your circuit.
+
+\savecircuit
+
+\begin{parts}
+\part[20] \textbf{Check-off}: Open the tuning tool and select \textbf{XOR} as the target function. Click \textbf{Optimize}, then use a DMM to transfer the resulting weight and threshold values to your physical circuit. Demonstrate to a TA that your circuit correctly implements XOR by cycling through all four input combinations. Repeat for \textbf{NAND}.
+\end{parts}
+
+\subsection*{7E: Training the Network by Hand (Bonus)}
+
+The manual tuning procedure below approximates gradient descent --- so by following it, you are doing roughly the same process used to train a real neural network, but by hand:
+
+\begin{enumerate}
+    \item Set all weights to 0 (pot knobs to the middle).
+    \item Find the spot where turning the threshold pot flips the output
+    (should be near 0) and put it slightly past that so the output LED is on.
+    \item Cycle through the four possible inputs until you find one for which
+    the output is incorrect. (If none are incorrect, you are done!)
+    \item Determine which of the two hidden neurons to update:
+    if the input is (0, 0) or (0, 1), update the first hidden neuron.
+    If the input is (1, 0) or (1, 1), update the second hidden neuron.
+    \item Find the gradient: for each of the two weight pots connected to
+    the hidden neuron you selected, look at the input connected to that weight.
+    If the input is on, the gradient for that weight is positive. If the input
+    is off, the gradient for that weight is negative.
+    \item Turn each of the two pots about a quarter-turn in the direction of
+    the gradient. The exact amount doesn't matter.
+    \item Repeat from step 3 until your network represents the target function.
+    If you end up with the inverse of your target function, your network is
+    wired backwards. Don't worry --- just repeat the process but turn the weights
+    in the opposite direction in step 6.
+\end{enumerate}
+
+\begin{parts}
+\setcounter{partno}{1}
+\bonuspart[5] \textbf{Bonus Check-off}: Train your ANN to perform both \textbf{XOR} and \textbf{NAND} by hand using the procedure above, in front of a TA.
+\end{parts}

@@ -1,0 +1,41 @@
+\titledquestion{Comparator Light Switch}
+
+The comparator is the simplest op-amp circuit: it compares two voltages and drives its output high or low. In our neural network, the comparator will form the \textbf{output decision} --- it compares the network's output sum against a threshold to decide whether the LED turns on.
+
+Build the following circuit on your breadboard, which uses a light-dependent resistor (LDR) to control an LED:
+
+\begin{figure}[h]
+	\centering
+	\begin{circuitikz}[scale=1.4, transform shape]
+  	\draw (0, 0) node[op amp] (opamp) {\tiny TL072};
+	\draw (opamp.+) to[short,-o] ++(-.5,0) node[anchor=east] {$v_+$};
+ 	\draw (opamp.out)  to[R,l=1k$\Omega$,/tikz/circuitikz/bipoles/length=1cm] ++(2.5,0) to[led] ++(0,-1.75) node[sground] {};
+ 	\draw (opamp.-) -- ++(-2,0) to[R,l=$R_X\hspace{.4cm}$,/tikz/circuitikz/bipoles/length=1cm] ++(0,2) node[opampuplbl] {$+9$V};
+ node[sground] {};
+ \draw (opamp.-) -- ++(-2,0) to[R,l_=$4.7$k$\Omega$,/tikz/circuitikz/bipoles/length=1cm] ++(0,-2) node[sground]{};
+ 	\draw (opamp.up) to[short] ++(0,0.5) node[opampuplbl] {$+9$V};
+ 	\draw (opamp.down) to[short] ++(0,-0.5) node[opampdownlbl] {$-9$V};
+ 	\draw (opamp.-) ++(-.7,0) node[anchor=south]{$v_-$};
+ 	\draw (opamp.-) ++(-2,1) circle (16pt);
+	\end{circuitikz}
+	\caption{Comparator Circuit with LED indicator at output and light-dependent voltage divider at the inverting input.}
+	\label{fig:dccomp}
+\end{figure}
+
+This circuit uses the op amp in an open-loop configuration (i.e.\ no feedback). When the voltage at $v_+$ exceeds the voltage at $v_-$, the output will be driven to +9V and the LED will turn on. Otherwise, the LED will be off.
+
+A voltage divider consisting of an LDR $R_X$ and a 4.7 k$\Omega$ resistor provides a voltage to the $v_-$ input. You will build a second voltage divider to provide $\approx4.5$V to the $v_+$ input. The comparator will compare $v_-$ to $v_+$ and then drive its output to either high (LED on) or low (LED off).
+
+\begin{parts}
+    \part[2] Measure $v_-$ using a digital multimeter, both when the LDR is well-lit and when the LDR is in the dark. What are the dark ($V_{dark}$) and light ($V_{light}$) voltages that you measured at $v_-$?
+\medbreak
+\textbf{$V_{dark}$} = \framebox[4cm][r]{\rule{0pt}{1cm}\si{\volt}} \quad \textbf{$V_{light}$} = \framebox[4cm][r]{\rule{0pt}{1cm}\si{\volt}}
+
+    \part[10] Complete your light-switch circuit on your breadboard by adding a voltage divider to provide 4.5V to the $v_+$ input. The LED should have a different state when the LDR is well-lit versus when the LDR is in the dark.
+
+    \medbreak
+    \infotext{\linewidth}{You do not need to save this circuit. These components can be reused later.}
+
+\end{parts}
+
+\pagebreak
